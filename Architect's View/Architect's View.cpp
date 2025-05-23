@@ -28,6 +28,7 @@ camera testCam(cameraPos, cameraFront, cameraUp);
 
 // Lighting
 glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+bool trackWithCam = false;
 
 
 // Resizing window frame
@@ -60,6 +61,14 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     testCam.cameraPos = cameraPos;
+
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+        trackWithCam = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+        trackWithCam = false;
+    }
+
 }
 
 // Process mouse movement
@@ -205,9 +214,6 @@ int main() {
         
         model = MS.pop();
 
-
-
-
         // ------------------------------------------------------------------------------
         // Lighting Cube
 
@@ -220,7 +226,13 @@ int main() {
         shaderParam(lightShader, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 1);
         lightShader.setMV(model, view);
         // Lighting position
-        lightShader.setLightPos(glm::vec3(model[3]));
+        if (trackWithCam) {
+            lightPos = testCam.cameraPos;
+            lightShader.setLightPos(lightPos);
+        }
+        else {
+            lightShader.setLightPos(glm::vec3(model[3]));
+        }
         testCube.drawCube();
         
         model = MS.pop();
