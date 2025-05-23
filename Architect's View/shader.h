@@ -96,24 +96,29 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     }
 
-    void setColor(glm::vec3 c) {
-        glUniform3fv(glGetUniformLocation(ID, "objectColor"), 1, glm::value_ptr(c));
+    void setColor(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess) {
+        glUniform3fv(glGetUniformLocation(ID, "material.ambient"), 1, glm::value_ptr(ambient));
+        glUniform3fv(glGetUniformLocation(ID, "material.diffuse"), 1, glm::value_ptr(diffuse));
+        glUniform3fv(glGetUniformLocation(ID, "material.specular"), 1, glm::value_ptr(specular));
+        glUniform1f(glGetUniformLocation(ID, "material.shininess"), (shininess));
     }
 
-    void setLightColor(glm::vec3 c) {
-        glUniform3fv(glGetUniformLocation(ID, "lightColor"), 1, glm::value_ptr(c));
+    void setLight(glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
+        glUniform3fv(glGetUniformLocation(ID, "light.position"), 1, glm::value_ptr(pos));
+        glUniform3fv(glGetUniformLocation(ID, "light.ambient"), 1, glm::value_ptr(ambient));
+        glUniform3fv(glGetUniformLocation(ID, "light.diffuse"), 1, glm::value_ptr(diffuse));
+        glUniform3fv(glGetUniformLocation(ID, "light.specular"), 1, glm::value_ptr(specular));
     }
 
     void setLightPos(glm::vec3 c) {
-        glUniform3fv(glGetUniformLocation(ID, "lightPos"), 1, glm::value_ptr(c));
+        glUniform3fv(glGetUniformLocation(ID, "light.position"), 1, glm::value_ptr(c));
     }
 
     void setViewPos(glm::vec3 c) {
         glUniform3fv(glGetUniformLocation(ID, "viewPos"), 1, glm::value_ptr(c));
     }
 
-
-    void setInt(const std::string& name, int value) const {
+    void setID(const std::string& name, int value) const {
         if (value == 1) {
             glUniform1i(glGetUniformLocation(ID, name.c_str()), 1);
         }
@@ -121,6 +126,9 @@ public:
             glUniform1i(glGetUniformLocation(ID, name.c_str()), 0);
         }
         
+    }
+    void setFloat(const std::string& name, float value) const {
+        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
 
     void setMV(glm::mat4 model, glm::mat4 view) {

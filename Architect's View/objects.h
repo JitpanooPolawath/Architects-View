@@ -5,6 +5,11 @@
 
 class Cube {
 public:
+    glm::vec3 ambient = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    float shininess = 100.0f;
+
     unsigned int VBO, VAO;
     Cube() {
         float vertices[] = {
