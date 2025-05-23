@@ -142,9 +142,6 @@
     <Text Include="fragment.fs" />
     <Text Include="vertex.vs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="fragment2.fs" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

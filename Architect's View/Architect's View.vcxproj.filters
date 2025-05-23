@@ -40,7 +40,4 @@
     <Text Include="vertex.vs" />
     <Text Include="fragment.fs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="fragment2.fs" />
-  </ItemGroup>
 </Project>
