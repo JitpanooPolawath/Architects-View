@@ -20,6 +20,10 @@
 #include <iostream>
 #include <filesystem> 
 
+// Screen size
+int SCR_W = 1080;
+int SCR_H = 900;
+
 // Time
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -31,9 +35,21 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 camera testCam(cameraPos, cameraFront, cameraUp);
 
+// Object
+float ambO[] = { 0.0,0.0,0.0 };
+float difO[] = { 0.0,0.0,0.0 };
+float speO[] = { 0.0,0.0,0.0 };
+float shininess = 0.0;
 
 // Lighting
-glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, -2.0f);
+glm::vec3 lightAmbient = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 lightDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 lightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
+float amb[] = { 0.0,0.0,0.0 };
+float dif[] = { 0.0,0.0,0.0 };
+float spe[] = { 0.0,0.0,0.0 };
+float pos[] = { 0.0,0.0,-2.0 };
 bool trackWithCam = false;
 
 
@@ -126,7 +142,6 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
         front.z = sin(glm::radians(testCam.yaw)) * cos(glm::radians(testCam.pitch));
         testCam.cameraFront = glm::normalize(front);
     } 
-    std::cout << testCam.lastX << testCam.lastY << "----" << xposIn << "-----" << yposIn << std::endl;
 }
 
 // Transformation
@@ -144,10 +159,52 @@ glm::mat4 rotate(glm::mat4 model, float degree, float x, float y, float z) {
     return glm::rotate(model, degree, glm::vec3(x,y,z));
 }
 
-void shaderParam(Shader shader, glm::vec3 color, glm::vec3 lightColor, int value) {
-    shader.setColor(color);
-    shader.setLightColor(lightColor);
-    shader.setInt("ID", value);
+void setColor(Shader shader, Cube cubic) {
+    shader.setColor(cubic.ambient,cubic.diffuse,cubic.specular,cubic.shininess);
+    shader.setID("ID", 0);
+}
+
+void setLight(Shader shader, glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular){
+    shader.setLight(pos, ambient, diffuse, specular);
+    shader.setID("ID", 1);
+}
+
+void setImLight() {
+    ImGui::Text("Light setting");
+    ImGui::SliderFloat3("ambient", amb, 0.0, 1.0);
+    lightAmbient[0] = amb[0];
+    lightAmbient[1] = amb[1];
+    lightAmbient[2] = amb[2];
+    ImGui::SliderFloat3("diffuse", dif, 0.0, 1.0);
+    lightDiffuse[0] = dif[0];
+    lightDiffuse[1] = dif[1];
+    lightDiffuse[2] = dif[2];
+    ImGui::SliderFloat3("specular", spe, 0.0, 1.0);
+    lightSpecular[0] = spe[0];
+    lightSpecular[1] = spe[1];
+    lightSpecular[2] = spe[2];
+    ImGui::SliderFloat3("Position", pos, -100.0, 100.0);
+    lightPos[0] = pos[0];
+    lightPos[1] = pos[1];
+    lightPos[2] = pos[2];
+}
+
+void setImObj(Cube* cubic) {
+    ImGui::Text("object setting");
+    ImGui::SliderFloat3("ambient Object", ambO, 0.0, 1.0);
+    cubic->ambient[0] = ambO[0];
+    cubic->ambient[1] = ambO[1];
+    cubic->ambient[2] = ambO[2];
+    ImGui::SliderFloat3("diffuse Object", difO, 0.0, 1.0);
+    cubic->diffuse[0] = difO[0];
+    cubic->diffuse[1] = difO[1];
+    cubic->diffuse[2] = difO[2];
+    ImGui::SliderFloat3("specular Object", speO, 0.0, 1.0);
+    cubic->specular[0] = speO[0];
+    cubic->specular[1] = speO[1];
+    cubic->specular[2] = speO[2];
+    ImGui::SliderFloat("shininess", &shininess, 0.0, 100);
+    cubic->shininess = shininess;
 }
 
 int main() {
@@ -158,7 +215,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_W, SCR_H, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -226,6 +283,7 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+
         // Input
         processInput(window);
 
@@ -251,8 +309,10 @@ int main() {
         
         model = translate(model, 0.0f, 0.0f, 0.0f);
         model = scale(model, 5.0f, 5.0f, 1.0f);
-        shaderParam(lightShader, glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0);
+
+        setColor(lightShader, testCube);
         lightShader.setMV(model, view);
+        
         testCube.drawCube();
         
         model = MS.pop();
@@ -263,15 +323,14 @@ int main() {
         MS.push(model);
 
         //model = rotate(model, lastFrame * 1.0f, 0, 1, 0);
-        model = translate(model,0.0f, 0.0f, -2.0f);
+        model = translate(model, lightPos[0],lightPos[1], lightPos[2]);
         model = scale(model, 0.2f, 0.2f, 0.2f);
 
-        shaderParam(lightShader, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 1);
+        setLight(lightShader,lightPos, lightAmbient, lightDiffuse, lightSpecular );
         lightShader.setMV(model, view);
         // Lighting position
         if (trackWithCam) {
-            lightPos = testCam.cameraPos;
-            lightShader.setLightPos(lightPos);
+            lightShader.setLightPos(testCam.cameraPos);
         }
         else {
             lightShader.setLightPos(glm::vec3(model[3]));
@@ -281,8 +340,11 @@ int main() {
         model = MS.pop();
 
         // ImGui After scene
-        ImGui::Begin("This is a new window for imGUI");
-        ImGui::Text("Hello ImGui");
+        ImGui::Begin("Parameters");
+        ImGui::Text("press [3] : unbind from camera - press [4] : bind to camera");
+        ImGui::Text("press [1] : light track camera - press [2] : light untrack camera");
+        setImLight();
+        setImObj(&testCube);
         ImGui::End();
 
         ImGui::Render();
