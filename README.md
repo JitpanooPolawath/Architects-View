@@ -7,9 +7,9 @@ A program that allows users to take a photo of a building blueprint and render i
 - Move and interact with the camera - completed
 - Change lighting behaviour (single lighting)
 -   Basic lighting (ADS) - Completed
--   Ability to move the light with camera - Completed
--   Ability to put light in a specific coordinate
--   Ability to change light color/brightness
+-   Ability to move the light with the camera - Completed
+-   Ability to put light in a specific coordinate - Completed (maybe need an input text box)
+-   Ability to change light color/brightness - Completed
 - Read from image (Python and output as a file for C++ to read)
 - GUI
 
