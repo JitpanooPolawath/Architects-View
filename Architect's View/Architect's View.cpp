@@ -5,6 +5,11 @@
 #include <glm/glm/gtc/matrix_transform.hpp>
 #include <glm/glm/gtc/type_ptr.hpp>
 
+// imGui
+#include <imGui/imgui.h>
+#include <imGui/imgui_impl_glfw.h>
+#include <imGui/imgui_impl_opengl3.h>
+
 // classes
 #include "../Architect's View/shader.h"
 #include "../Architect's View/camera.h"
@@ -25,6 +30,7 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 camera testCam(cameraPos, cameraFront, cameraUp);
+
 
 // Lighting
 glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -68,46 +74,59 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
         trackWithCam = false;
     }
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        testCam.mouseMove = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        testCam.mouseMove = true;
+        testCam.firstMouse = true;
+    }
 
 }
 
 // Process mouse movement
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
-    
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
 
-    if (testCam.firstMouse)
-    {
+    if (testCam.mouseMove) {
+
+        float xpos = static_cast<float>(xposIn);
+        float ypos = static_cast<float>(yposIn);
+
+        if (testCam.firstMouse)
+        {
+            testCam.lastX = xpos;
+            testCam.lastY = ypos;
+            testCam.firstMouse = false;
+        }
+
+        float xoffset = xpos - testCam.lastX;
+        float yoffset = testCam.lastY - ypos; // reversed since y-coordinates go from bottom to top
         testCam.lastX = xpos;
         testCam.lastY = ypos;
-        testCam.firstMouse = false;
-    }
 
-    float xoffset = xpos - testCam.lastX;
-    float yoffset = testCam.lastY - ypos; // reversed since y-coordinates go from bottom to top
-    testCam.lastX = xpos;
-    testCam.lastY = ypos;
+        float sensitivity = 0.1f; // change this value to your liking
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
 
-    float sensitivity = 0.1f; // change this value to your liking
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
+        testCam.yaw += xoffset;
+        testCam.pitch += yoffset;
 
-    testCam.yaw += xoffset;
-    testCam.pitch += yoffset;
+        // make sure that when pitch is out of bounds, screen doesn't get flipped
+        if (testCam.pitch > 89.0f)
+            testCam.pitch = 89.0f;
+        if (testCam.pitch < -89.0f)
+            testCam.pitch = -89.0f;
 
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (testCam.pitch > 89.0f)
-        testCam.pitch = 89.0f;
-    if (testCam.pitch < -89.0f)
-        testCam.pitch = -89.0f;
-
-    glm::vec3 front;
-    front.x = cos(glm::radians(testCam.yaw)) * cos(glm::radians(testCam.pitch));
-    front.y = sin(glm::radians(testCam.pitch));
-    front.z = sin(glm::radians(testCam.yaw)) * cos(glm::radians(testCam.pitch));
-    testCam.cameraFront = glm::normalize(front);
+        glm::vec3 front;
+        front.x = cos(glm::radians(testCam.yaw)) * cos(glm::radians(testCam.pitch));
+        front.y = sin(glm::radians(testCam.pitch));
+        front.z = sin(glm::radians(testCam.yaw)) * cos(glm::radians(testCam.pitch));
+        testCam.cameraFront = glm::normalize(front);
+    } 
+    std::cout << testCam.lastX << testCam.lastY << "----" << xposIn << "-----" << yposIn << std::endl;
 }
 
 // Transformation
@@ -131,10 +150,10 @@ void shaderParam(Shader shader, glm::vec3 color, glm::vec3 lightColor, int value
     shader.setInt("ID", value);
 }
 
-
-
 int main() {
 
+    // Initializing GLFW
+    const char* glsl_version = "#version 300 es";
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -167,7 +186,24 @@ int main() {
         std::cerr << "File does not exist" << std::endl;
     }
 
+    // Depth testing, no weird artifact
     glEnable(GL_DEPTH_TEST);
+
+    // Initializing imGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; 
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+#ifdef __EMSCRIPTEN__
+    ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
+#endif
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Create shader object
     Shader lightShader("vertex.vs", "fragment.fs");
@@ -177,12 +213,18 @@ int main() {
     // Rendering loop
     while (!glfwWindowShouldClose(window)) {
 
+        // Push and pop
         MatrixStack MS;
-        
+       
         // Time
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        // ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         // Input
         processInput(window);
@@ -191,6 +233,7 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // World placement and Camera
         glm::mat4 model = glm::mat4(1.0f);
 
         glm::mat4 view;
@@ -237,12 +280,24 @@ int main() {
         
         model = MS.pop();
 
+        // ImGui After scene
+        ImGui::Begin("This is a new window for imGUI");
+        ImGui::Text("Hello ImGui");
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // update window
         glfwSwapBuffers(window);
         glfwPollEvents();
 
     }
     
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     testCube.deleteBuffVer();
     glfwTerminate();
     return 0;

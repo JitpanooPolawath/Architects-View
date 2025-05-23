@@ -18,6 +18,7 @@ public:
 	glm::vec3 cameraPos;
 	glm::vec3 cameraFront;
 	glm::vec3 cameraUp;
+    bool mouseMove = true;
 
 	camera(glm::vec3 cameraP, glm::vec3 cameraF, glm::vec3 cameraU) {
 		cameraPos = cameraP;
