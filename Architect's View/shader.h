@@ -110,6 +110,12 @@ public:
     void setLightPos(glm::vec3 c) {
         glUniform3fv(glGetUniformLocation(ID, "light.position"), 1, glm::value_ptr(c));
     }
+    void setLightDirect(glm::vec3 c) {
+        glUniform3fv(glGetUniformLocation(ID, "light.direction"), 1, glm::value_ptr(c));
+    }
+    void setIsSpot(int value) {
+        glUniform1i(glGetUniformLocation(ID, "isSpot"), value);
+    }
 
     void setViewPos(glm::vec3 c) {
         glUniform3fv(glGetUniformLocation(ID, "viewPos"), 1, glm::value_ptr(c));

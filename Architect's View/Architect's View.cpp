@@ -166,6 +166,9 @@ void setColor(Shader shader, Cube cubic) {
 
 void setLight(Shader shader, glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular){
     shader.setLight(pos, ambient, diffuse, specular);
+    shader.setFloat("light.constant", 1.0f);
+    shader.setFloat("light.linear", 0.9f);
+    shader.setFloat("light.quadratic", 0.032f);
     shader.setID("ID", 1);
 }
 
@@ -183,7 +186,7 @@ void setImLight() {
     lightSpecular[0] = spe[0];
     lightSpecular[1] = spe[1];
     lightSpecular[2] = spe[2];
-    ImGui::SliderFloat3("Position", pos, -100.0, 100.0);
+    ImGui::SliderFloat3("Position", pos, -10.0, 10.0);
     lightPos[0] = pos[0];
     lightPos[1] = pos[1];
     lightPos[2] = pos[2];
@@ -319,8 +322,13 @@ int main() {
         // Lighting position
         if (trackWithCam) {
             lightShader.setLightPos(testCam.cameraPos);
+            lightShader.setLightDirect(testCam.cameraFront);
+            lightShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+            lightShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+            lightShader.setIsSpot(1);
         }
         else {
+            lightShader.setIsSpot(0);
             lightShader.setLightPos(glm::vec3(model[3]));
         }
         testCube.drawCube("","",true);
