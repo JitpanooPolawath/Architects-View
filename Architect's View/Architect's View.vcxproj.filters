@@ -16,6 +16,9 @@
     <Filter Include="Source Files\imGui">
       <UniqueIdentifier>{97f10220-51cf-463d-ad55-eb90f99c3b88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\texture">
+      <UniqueIdentifier>{c059b6f3-92c2-48da-a021-74ff4c77267b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Architect%27s View.cpp">
@@ -59,9 +62,26 @@
     <ClInclude Include="stack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="vertex.vs" />
     <Text Include="fragment.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\diffuseCube.jpeg">
+      <Filter>Source Files\texture</Filter>
+    </Image>
+    <Image Include="texture\specularCube.jpeg">
+      <Filter>Source Files\texture</Filter>
+    </Image>
+    <Image Include="texture\container2.png">
+      <Filter>Source Files\texture</Filter>
+    </Image>
+    <Image Include="texture\container2_specular.png">
+      <Filter>Source Files\texture</Filter>
+    </Image>
   </ItemGroup>
 </Project>

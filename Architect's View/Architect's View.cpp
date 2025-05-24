@@ -160,7 +160,7 @@ glm::mat4 rotate(glm::mat4 model, float degree, float x, float y, float z) {
 }
 
 void setColor(Shader shader, Cube cubic) {
-    shader.setColor(cubic.ambient,cubic.diffuse,cubic.specular,cubic.shininess);
+    shader.setColor(cubic.shininess);
     shader.setID("ID", 0);
 }
 
@@ -191,18 +191,6 @@ void setImLight() {
 
 void setImObj(Cube* cubic) {
     ImGui::Text("object setting");
-    ImGui::SliderFloat3("ambient Object", ambO, 0.0, 1.0);
-    cubic->ambient[0] = ambO[0];
-    cubic->ambient[1] = ambO[1];
-    cubic->ambient[2] = ambO[2];
-    ImGui::SliderFloat3("diffuse Object", difO, 0.0, 1.0);
-    cubic->diffuse[0] = difO[0];
-    cubic->diffuse[1] = difO[1];
-    cubic->diffuse[2] = difO[2];
-    ImGui::SliderFloat3("specular Object", speO, 0.0, 1.0);
-    cubic->specular[0] = speO[0];
-    cubic->specular[1] = speO[1];
-    cubic->specular[2] = speO[2];
     ImGui::SliderFloat("shininess", &shininess, 0.0, 100);
     cubic->shininess = shininess;
 }
@@ -313,7 +301,7 @@ int main() {
         setColor(lightShader, testCube);
         lightShader.setMV(model, view);
         
-        testCube.drawCube();
+        testCube.drawCube("texture/container2.png","texture/container2_specular.png");
         
         model = MS.pop();
 
@@ -335,7 +323,7 @@ int main() {
         else {
             lightShader.setLightPos(glm::vec3(model[3]));
         }
-        testCube.drawCube();
+        testCube.drawCube("","",true);
         
         model = MS.pop();
 

@@ -145,10 +145,17 @@
     <ClInclude Include="objects.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stack.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="fragment.fs" />
     <Text Include="vertex.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\diffuseCube.jpeg" />
+    <Image Include="texture\container2.png" />
+    <Image Include="texture\container2_specular.png" />
+    <Image Include="texture\specularCube.jpeg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
