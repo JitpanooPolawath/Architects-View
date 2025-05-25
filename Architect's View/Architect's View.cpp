@@ -41,6 +41,9 @@ float difO[] = { 0.0,0.0,0.0 };
 float speO[] = { 0.0,0.0,0.0 };
 float shininess = 0.0;
 
+
+
+
 // Lighting
 glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, -2.0f);
 glm::vec3 lightAmbient = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -159,7 +162,7 @@ glm::mat4 rotate(glm::mat4 model, float degree, float x, float y, float z) {
     return glm::rotate(model, degree, glm::vec3(x,y,z));
 }
 
-void setColor(Shader shader, Cube cubic) {
+void setColor(Shader shader, cubeSpec cubic) {
     shader.setColor(cubic.shininess);
     shader.setID("ID", 0);
 }
@@ -192,20 +195,40 @@ void setImLight() {
     lightPos[2] = pos[2];
 }
 
-void setImObj(Cube* cubic) {
+void setImObj(cubeSpec* cubic) {
     ImGui::Text("object setting");
     ImGui::SliderFloat("shininess", &shininess, 0.0, 100);
     cubic->shininess = shininess;
 }
 
-void setWalls(char const* path) {
+cubeSpec* setWalls(const char* path, int* numCubes) {
+
     std::ifstream file(path);
     std::string strAmount;
     std::getline(file, strAmount);
+    int amount = std::stoi(strAmount);
+    *numCubes = amount;
+    cubeSpec* tempCubes = new cubeSpec[amount];
+    for (int i = 0; i < amount; i++) {
+        std::string cubeSpec;   
+        std::getline(file, cubeSpec);
+        int ID = cubeSpec[0] - '0';
+        float sX = cubeSpec[2] - '0';
+        float sY = cubeSpec[4] - '0';
+        float sZ = cubeSpec[6] - '0';
+        float rotate = std::stoi(cubeSpec.substr(8));
+        tempCubes[i].setTransformation(ID, glm::vec3(0.0, 0.0, 0.0), glm::vec3(sX, sY, sZ), rotate);
+    }
+    file.close();
+
+    return tempCubes;
 }
 
 int main() {
 
+    int numCubes = 0;
+    cubeSpec* arrayCubeSpec = nullptr;
+    arrayCubeSpec = setWalls("detection.txt", &numCubes);
 
     // Initializing GLFW
     const char* glsl_version = "#version 300 es";
@@ -262,6 +285,7 @@ int main() {
 
     // Create shader object
     Shader lightShader("vertex.vs", "fragment.fs");
+
     // Create cube object
     Cube testCube;
 
@@ -301,19 +325,24 @@ int main() {
         lightShader.setMV(model, view);
         lightShader.setProj(projection);
         lightShader.setViewPos(testCam.cameraPos);
+        
 
         // Scene
+        /*for (int i = 0; i < numCubes; i++) {
+            
+        }*/
+        int i = 2;
         MS.push(model);
-        
-        model = translate(model, 0.0f, 0.0f, 0.0f);
-        model = scale(model, 5.0f, 5.0f, 1.0f);
 
-        setColor(lightShader, testCube);
+        model = rotate(model, arrayCubeSpec[i].rotate, 0, 0, 1);
+        model = translate(model, arrayCubeSpec[i].translate.x + arrayCubeSpec[i].scale.x * i, arrayCubeSpec[i].translate.y, arrayCubeSpec[i].translate.z);
+        model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
+        
+        setColor(lightShader, arrayCubeSpec[i]);
         lightShader.setMV(model, view);
-        
-        testCube.drawCube("texture/container2.png","texture/container2_specular.png");
-        
+        testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
         model = MS.pop();
+        
 
         // ------------------------------------------------------------------------------
         // Lighting Cube
@@ -338,8 +367,7 @@ int main() {
             lightShader.setIsSpot(0);
             lightShader.setLightPos(glm::vec3(model[3]));
         }
-        testCube.drawCube("","",true);
-        
+        testCube.drawCube("texture/container2.png", "texture/container2_specular.png",true);
         model = MS.pop();
 
         // ImGui After scene
@@ -347,7 +375,6 @@ int main() {
         ImGui::Text("press [3] : unbind from camera - press [4] : bind to camera");
         ImGui::Text("press [1] : light track camera - press [2] : light untrack camera");
         setImLight();
-        setImObj(&testCube);
         ImGui::End();
 
         ImGui::Render();
@@ -366,4 +393,5 @@ int main() {
     testCube.deleteBuffVer();
     glfwTerminate();
     return 0;
+    
 }
