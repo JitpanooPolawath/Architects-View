@@ -8,12 +8,33 @@
 // Basic
 #include <filesystem> 
 
-class Cube {
+class cubeSpec {
 public:
+    int id;
+    glm::vec3 translate;
+    glm::vec3 scale;
+    float rotate;
     glm::vec3 ambient = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
-    float shininess = 100.0f;
+    float shininess = 30.0;
+    cubeSpec() {};
+    void updateColor(glm::vec3 amb, glm::vec3 dif, glm::vec3 spe) {
+        ambient = amb;
+        diffuse = dif;
+        specular = spe;
+    }
+    void setTransformation(int ID, glm::vec3 trans, glm::vec3 scal, float rotat) {
+        id = ID;
+        translate = trans;
+        scale = scal;
+        rotate = rotat;
+    }
+};
+
+class Cube {
+public:
+ 
     GLenum format;
 
     unsigned int VBO, VAO;
@@ -81,6 +102,9 @@ public:
         glEnableVertexAttribArray(2);
 
     };
+
+    
+
 
     unsigned int loadTexture(char const* path)
     {
