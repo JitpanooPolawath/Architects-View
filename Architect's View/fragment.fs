@@ -7,7 +7,7 @@ struct Material {
     float shininess;
 }; 
 uniform Material material;
-1
+
 struct Light {
     vec3 position;
 	vec3 direction;

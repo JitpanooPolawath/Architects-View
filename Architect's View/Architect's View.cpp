@@ -198,7 +198,14 @@ void setImObj(Cube* cubic) {
     cubic->shininess = shininess;
 }
 
+void setWalls(char const* path) {
+    std::ifstream file(path);
+    std::string strAmount;
+    std::getline(file, strAmount);
+}
+
 int main() {
+
 
     // Initializing GLFW
     const char* glsl_version = "#version 300 es";

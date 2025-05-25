@@ -149,6 +149,7 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="detection.txt" />
     <Text Include="fragment.fs" />
     <Text Include="vertex.vs" />
   </ItemGroup>
