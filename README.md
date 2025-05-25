@@ -13,6 +13,10 @@ A program that allows users to take a photo of a building blueprint and render i
 - Read from image (Python and output as a file for C++ to read)
 - GUI
 
+# Additional features
+- More Complex lighting - shadow, multiple lights, and more
+- Normal mapping for walls
+
 
 # Libraries needed
 - GLFW
