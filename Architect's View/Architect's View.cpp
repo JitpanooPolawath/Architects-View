@@ -322,26 +322,23 @@ int main() {
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
         lightShader.use();
-        lightShader.setMV(model, view);
         lightShader.setProj(projection);
-        lightShader.setViewPos(testCam.cameraPos);
+        lightShader.setView(view);
         
 
         // Scene
-        /*for (int i = 0; i < numCubes; i++) {
-            
-        }*/
-        int i = 2;
-        MS.push(model);
+        for (int i = 0; i < numCubes; i++) {
+            MS.push(model);
 
-        model = rotate(model, arrayCubeSpec[i].rotate, 0, 0, 1);
-        model = translate(model, arrayCubeSpec[i].translate.x + arrayCubeSpec[i].scale.x * i, arrayCubeSpec[i].translate.y, arrayCubeSpec[i].translate.z);
-        model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
-        
-        setColor(lightShader, arrayCubeSpec[i]);
-        lightShader.setMV(model, view);
-        testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
-        model = MS.pop();
+            model = rotate(model, arrayCubeSpec[i].rotate, 0, 0, 1);
+            model = translate(model, arrayCubeSpec[i].translate.x + arrayCubeSpec[i].scale.x * i, arrayCubeSpec[i].translate.y, arrayCubeSpec[i].translate.z);
+            model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
+
+            setColor(lightShader, arrayCubeSpec[i]);
+            lightShader.setModel(model);
+            testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
+            model = MS.pop();
+        }
         
 
         // ------------------------------------------------------------------------------
@@ -349,12 +346,11 @@ int main() {
 
         MS.push(model);
 
-        //model = rotate(model, lastFrame * 1.0f, 0, 1, 0);
         model = translate(model, lightPos[0],lightPos[1], lightPos[2]);
         model = scale(model, 0.2f, 0.2f, 0.2f);
 
         setLight(lightShader,lightPos, lightAmbient, lightDiffuse, lightSpecular );
-        lightShader.setMV(model, view);
+        lightShader.setModel(model);
         // Lighting position
         if (trackWithCam) {
             lightShader.setLightPos(testCam.cameraPos);

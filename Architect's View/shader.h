@@ -10,16 +10,6 @@
 #include <iostream>
 class Shader
 {
-private:
-    void setModel(glm::mat4 model) const {
-        glUniformMatrix4fv(glGetUniformLocation(ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    }
-
-    void setView(glm::mat4 view) const {
-        glUniformMatrix4fv(glGetUniformLocation(ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    }
-
-
 public: 
 	unsigned int ID;
 
@@ -120,6 +110,9 @@ public:
     void setViewPos(glm::vec3 c) {
         glUniform3fv(glGetUniformLocation(ID, "viewPos"), 1, glm::value_ptr(c));
     }
+    void setView(glm::mat4 view) const {
+        glUniformMatrix4fv(glGetUniformLocation(ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    }
 
     void setID(const std::string& name, int value) const {
         if (value == 1) {
@@ -133,10 +126,8 @@ public:
     void setFloat(const std::string& name, float value) const {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
-
-    void setMV(glm::mat4 model, glm::mat4 view) {
-        setModel(model);
-        setView(view);
+    void setModel(glm::mat4 model) const {
+        glUniformMatrix4fv(glGetUniformLocation(ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
     }
 
 

@@ -20,7 +20,7 @@ public:
 	void push(glm::mat4 model) {
 		int n = sizeof(*MS) / sizeof(MS[0]);
 		if (counter == n) {
-			glm::mat4* temp = new glm::mat4 [n+10];
+			glm::mat4* temp = new glm::mat4 [n+1];
 			for (int i = 0; i < n; i++) {
 				temp[i] = MS[i];
 			}

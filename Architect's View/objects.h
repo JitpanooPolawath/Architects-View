@@ -36,7 +36,7 @@ class Cube {
 public:
  
     GLenum format;
-
+    bool textLoaded = false;
     unsigned int VBO, VAO;
     unsigned int diffuseMap, specularMap;
     Cube() {
@@ -149,8 +149,11 @@ public:
     void drawCube(char const* diffuseText, char const* specularText, bool isLight = false) {
         if (!isLight) {
 
-            diffuseMap = loadTexture(diffuseText);
-            specularMap = loadTexture(specularText);
+            if (!textLoaded) {
+                diffuseMap = loadTexture(diffuseText);
+                specularMap = loadTexture(specularText);
+            }
+            textLoaded = true;
 
             // bind diffuse map
             glActiveTexture(GL_TEXTURE0);
@@ -161,6 +164,8 @@ public:
         }
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glActiveTexture(GL_TEXTURE0);
     };
 
     void deleteBuffVer() {
