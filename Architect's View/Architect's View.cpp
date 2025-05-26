@@ -382,27 +382,30 @@ int main() {
         float prevX = 0.0;
         float prevY = 0.0;
         float prevZ = 0.0;
+        float prevRotate = 0.0;
         MS.push(model);
-        for (int i = 0; i < 2; i++) {
-
-                if (i != 0) {
-                    model = translate(model, prevX, prevY, prevZ);
-                    model = rotate(model, arrayCubeSpec[i].rotate, 0, 1, 0);
-                    model = translate(model, arrayCubeSpec[i].scale.x / 2, prevY, prevZ);
-                }
-                arrayCubeSpec[i].print();
-                // Draw cube
-                MS.push(model);
+        for (int i = 0; i < numCubes; i++) {
+            
+            if (i != 0) {
+                model = translate(model, prevX, prevY, prevZ);
+                model = rotate(model, -prevRotate, 0, 1, 0);
+                model = rotate(model, arrayCubeSpec[i].rotate, 0, 1, 0);
+                model = translate(model, arrayCubeSpec[i].scale.x / 2, prevY, prevZ);
+            }
+            // Draw cube
+            MS.push(model);
                 model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
-          
+
                 setColor(lightShader, arrayCubeSpec[i]);
                 lightShader.setModel(model);
                 testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
-                model = MS.pop();
+            model = MS.pop();
 
             prevX = arrayCubeSpec[i].scale.x / 2;
+            prevRotate = arrayCubeSpec[i].rotate;
         }
         model = MS.pop();
+        
         // ------------------------------------------------------------------------------
         // Lighting Cube
 
