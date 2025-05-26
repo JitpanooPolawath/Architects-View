@@ -12,48 +12,99 @@
 
 class MatrixStack {
 private:
-	glm::mat4* MS = new glm::mat4[1];
-	int counter = 0;
-	bool twicePop = false;
+    glm::mat4* MS;       
+    int count;           
+    int capacity;       
+    static const int INITIAL_CAPACITY = 4; 
+
+    void resize(int newCapacity) {
+        if (newCapacity < count) { 
+            newCapacity = count > 0 ? count : INITIAL_CAPACITY;
+        }
+        if (newCapacity < INITIAL_CAPACITY && newCapacity != 0) {
+            newCapacity = INITIAL_CAPACITY;
+        }
+
+
+        glm::mat4* temp = new glm::mat4[newCapacity];
+        for (int i = 0; i < count; i++) {
+            temp[i] = MS[i];
+        }
+        delete[] MS;
+        MS = temp;
+        capacity = newCapacity;
+    }
+
 public:
-	
-	void push(glm::mat4 model) {
-		int n = sizeof(*MS) / sizeof(MS[0]);
-		if (counter == n) {
-			glm::mat4* temp = new glm::mat4 [n+3];
-			for (int i = 0; i < n; i++) {
-				temp[i] = MS[i];
-			}
-			delete[] MS;
-			MS = temp;
-		}
-		MS[counter] = model;
-		counter++;
-		twicePop = false;
+    MatrixStack(int initialCapacity = INITIAL_CAPACITY) : count(0) {
+        if (initialCapacity <= 0) {
+            this->capacity = INITIAL_CAPACITY; 
+        }
+        else {
+            this->capacity = initialCapacity;
+        }
+        MS = new glm::mat4[this->capacity];
+    }
 
-	}
+    ~MatrixStack() {
+        delete[] MS;
+    }
 
-	glm::mat4 pop() {
-		if (counter == 0) {
-			return MS[counter];
-		}
-		counter--;
-		if (twicePop == true) {
-			glm::mat4* deleteTemp = new glm::mat4[counter];
-			for (int i = 0; i < counter; i++) {
-				deleteTemp[i] = MS[i];
-			}
-			delete[] MS;
-			MS = deleteTemp;
-		}
-		twicePop = true;
-		return MS[counter];
-	}
+    MatrixStack(const MatrixStack&) = delete;
+    MatrixStack& operator=(const MatrixStack&) = delete;
 
-	void print() {
-		for (int i = 0; i < counter; i++) {
-			std::cout << glm::to_string(MS[i]) << std::endl;
-		}
-	}
 
+    void push(const glm::mat4& model) {
+        if (count == capacity) {
+            int newCapacity = (capacity == 0) ? INITIAL_CAPACITY : capacity * 2;
+            resize(newCapacity);
+        }
+        MS[count] = model;
+        count++;
+    }
+
+    glm::mat4 pop() {
+        if (count == 0) {
+            throw std::out_of_range("Cannot pop from an empty stack.");
+
+        }
+
+        count--; 
+        glm::mat4 topMatrix = MS[count];
+
+        if (capacity > INITIAL_CAPACITY && count > 0 && count <= capacity / 4) {
+            int newCapacity = capacity / 2;
+            if (newCapacity < INITIAL_CAPACITY) {
+                newCapacity = INITIAL_CAPACITY;
+            }
+            resize(newCapacity);
+        }
+        return topMatrix;
+    }
+
+    const glm::mat4& top() const {
+        if (count == 0) {
+            throw std::out_of_range("Cannot get top from an empty stack.");
+        }
+        return MS[count - 1];
+    }
+
+    bool isEmpty() const {
+        return count == 0;
+    }
+
+    int size() const {
+        return count;
+    }
+
+    void print() const { // Make print const
+        std::cout << "Matrix Stack (Count: " << count << ", Capacity: " << capacity << "):" << std::endl;
+        if (count == 0) {
+            std::cout << "  <empty>" << std::endl;
+            return;
+        }
+        for (int i = 0; i < count; i++) { // Iterate up to count (actual elements)
+            std::cout << "  [" << i << "]: " << glm::to_string(MS[i]) << std::endl;
+        }
+    }
 };
