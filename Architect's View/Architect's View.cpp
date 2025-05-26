@@ -162,9 +162,9 @@ glm::mat4 rotate(glm::mat4 model, float degree, float x, float y, float z) {
     return glm::rotate(model, degree, glm::vec3(x,y,z));
 }
 
-void setColor(Shader shader, cubeSpec cubic) {
-    shader.setColor(cubic.shininess);
-    shader.setID("ID", 0);
+void setColor(Shader* shader, cubeSpec cubic) {
+    shader->setColor(cubic.shininess);
+    shader->setID("ID", 0);
 }
 
 void setLight(Shader shader, glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular){
@@ -224,11 +224,58 @@ cubeSpec* setWalls(const char* path, int* numCubes) {
     return tempCubes;
 }
 
+void swap(cubeSpec& cube1, cubeSpec& cube2) {
+    cubeSpec temp = cube1;
+    cube1 = cube2;
+    cube2 = temp;
+}
+
+int partition(cubeSpec* arr, int low, int high) {
+    int pivot = arr[high].id; 
+    int i = (low - 1);  
+
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j].id < pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return (i + 1);
+}
+
+void sortCube(cubeSpec* arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+
+        sortCube(arr, low, pi - 1);
+        sortCube(arr, pi + 1, high);
+    }
+}
+
+
+void drawAlgorithm(int numCubes, MatrixStack* MS, glm::mat4 model, cubeSpec* arrayCubeSpec, Shader* lightShader, Cube* testCube) {
+    for (int i = 0; i < numCubes; i++) {
+        MS->push(model);
+
+        model = rotate(model, arrayCubeSpec[i].rotate, 0, 0, 1);
+        model = translate(model, arrayCubeSpec[i].translate.x + arrayCubeSpec[i].scale.x * i, arrayCubeSpec[i].translate.y, arrayCubeSpec[i].translate.z);
+        model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
+
+        setColor(lightShader, arrayCubeSpec[i]);
+        lightShader->setModel(model);
+        testCube->drawCube("texture/container2.png", "texture/container2_specular.png");
+        model = MS->pop();
+    }
+}
+
+
 int main() {
 
     int numCubes = 0;
     cubeSpec* arrayCubeSpec = nullptr;
     arrayCubeSpec = setWalls("detection.txt", &numCubes);
+    sortCube(arrayCubeSpec, 0, numCubes - 1);
 
     // Initializing GLFW
     const char* glsl_version = "#version 300 es";
@@ -327,19 +374,7 @@ int main() {
         
 
         // Scene
-        for (int i = 0; i < numCubes; i++) {
-            MS.push(model);
-
-            model = rotate(model, arrayCubeSpec[i].rotate, 0, 0, 1);
-            model = translate(model, arrayCubeSpec[i].translate.x + arrayCubeSpec[i].scale.x * i, arrayCubeSpec[i].translate.y, arrayCubeSpec[i].translate.z);
-            model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
-
-            setColor(lightShader, arrayCubeSpec[i]);
-            lightShader.setModel(model);
-            testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
-            model = MS.pop();
-        }
-        
+        drawAlgorithm(numCubes, &MS, model, arrayCubeSpec, &lightShader, &testCube);
 
         // ------------------------------------------------------------------------------
         // Lighting Cube
@@ -363,7 +398,7 @@ int main() {
             lightShader.setIsSpot(0);
             lightShader.setLightPos(glm::vec3(model[3]));
         }
-        testCube.drawCube("texture/container2.png", "texture/container2_specular.png",true);
+        testCube.drawCube("", "",true);
         model = MS.pop();
 
         // ImGui After scene
