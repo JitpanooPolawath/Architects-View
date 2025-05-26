@@ -19,6 +19,7 @@
 // Basic include
 #include <iostream>
 #include <filesystem> 
+#include <vector>
 
 // Screen size
 int SCR_W = 1080;
@@ -213,16 +214,27 @@ cubeSpec* setWalls(const char* path, int* numCubes) {
     int amount = std::stoi(strAmount);
     *numCubes = amount;
     cubeSpec* tempCubes = new cubeSpec[amount];
+    std::string fileLine;
+    std::vector<std::string> tokens;
+    while (std::getline(file, fileLine)) {
+        std::stringstream noLineFile(fileLine);
+        std::string token;
+        while (std::getline(noLineFile, token, '-')) {
+            tokens.push_back(token);
+        }
+    }
+
     for (int i = 0; i < amount; i++) {
-        std::string cubeSpec;   
-        std::getline(file, cubeSpec);
-        int ID = cubeSpec[0] - '0';
-        float sX = cubeSpec[2] - '0';
-        float sY = cubeSpec[4] - '0';
-        float sZ = cubeSpec[6] - '0';
-        float rotate = std::stoi(cubeSpec.substr(8));
+        int ID = std::stoi(tokens[5*i+0]);
+        float sX = std::stof(tokens[5*i+1]);
+        float sY = std::stof(tokens[5*i+2]);
+        float sZ = std::stof(tokens[5*i+3]);
+        float rotate = std::stof(tokens[5*i+4]);
+        //std::cout<<ID << "---" << sX << "---" << sY << "---" << sZ << "---" << rotate << std::endl;
         tempCubes[i].setTransformation(ID, glm::vec3(0.0, 0.0, 0.0), glm::vec3(sX, sY, sZ), rotate);
     }
+       
+        
     file.close();
 
     return tempCubes;
@@ -258,10 +270,6 @@ void sortCube(cubeSpec* arr, int low, int high) {
 }
 
 
-void drawAlgorithm(int numCubes, MatrixStack* MS, glm::mat4 model, cubeSpec* arrayCubeSpec, Shader* lightShader, Cube* testCube) {
-    
-}
-
 
 int main() {
 
@@ -269,6 +277,7 @@ int main() {
     cubeSpec* arrayCubeSpec = nullptr;
     arrayCubeSpec = setWalls("detection.txt", &numCubes);
     sortCube(arrayCubeSpec, 0, numCubes - 1);
+    
 
     // Initializing GLFW
     const char* glsl_version = "#version 300 es";
@@ -368,35 +377,32 @@ int main() {
 
         // Scene
         //drawAlgorithm(numCubes, &MS, model, arrayCubeSpec, &lightShader, &testCube);
-
+        
+        
         float prevX = 0.0;
         float prevY = 0.0;
         float prevZ = 0.0;
-        for (int i = 0; i < numCubes; i++) {
+        MS.push(model);
+        for (int i = 0; i < 2; i++) {
 
-            // Draw cube
-            MS.push(model);
-            
                 if (i != 0) {
-                    model = translate(model, prevX + arrayCubeSpec[i].scale.z/2, prevY, prevZ);
+                    model = translate(model, prevX, prevY, prevZ);
                     model = rotate(model, arrayCubeSpec[i].rotate, 0, 1, 0);
                     model = translate(model, arrayCubeSpec[i].scale.x / 2, prevY, prevZ);
                 }
-                if (i % 2 != 0) {
-                    model = scale(model, arrayCubeSpec[i].scale.x + arrayCubeSpec[i-1].scale.z, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
-                }
-                else {
-                    model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
-                }
+                arrayCubeSpec[i].print();
+                // Draw cube
+                MS.push(model);
+                model = scale(model, arrayCubeSpec[i].scale.x, arrayCubeSpec[i].scale.y, arrayCubeSpec[i].scale.z);
           
                 setColor(lightShader, arrayCubeSpec[i]);
                 lightShader.setModel(model);
                 testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
-            model = MS.pop();
+                model = MS.pop();
 
             prevX = arrayCubeSpec[i].scale.x / 2;
         }
-
+        model = MS.pop();
         // ------------------------------------------------------------------------------
         // Lighting Cube
 

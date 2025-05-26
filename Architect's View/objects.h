@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <glm/glm/glm.hpp>
+#include <glm/glm/gtx/string_cast.hpp>
 
 // Basic
 #include <filesystem> 
@@ -29,6 +31,9 @@ public:
         translate = trans;
         scale = scal;
         rotate = rotat;
+    }
+    void print() {
+        std::cout << id << "---" << glm::to_string(translate) << "---" << glm::to_string(scale) << "---" << rotate << std::endl;
     }
 };
 
