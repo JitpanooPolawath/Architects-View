@@ -175,8 +175,8 @@ void setColor(Shader shader, Cube cubic) {
 void setLight(Shader shader, glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular){
     shader.setLight(pos, ambient, diffuse, specular);
     shader.setFloat("light.constant", 1.0f);
-    shader.setFloat("light.linear", 0.9f);
-    shader.setFloat("light.quadratic", 0.032f);
+    shader.setFloat("light.linear", 0.0f);
+    shader.setFloat("light.quadratic",0.0f);
     shader.setID("ID", 1);
 }
 
@@ -428,6 +428,20 @@ int main() {
         
 
         // Scene
+       
+        // Plane
+        MS.push(model);
+        model = translate(model, 0.0f, -1.0f, 0.0f);
+        model = scale(model,10.f, 1.0f, 10.0f);
+        setColor(lightShader, arrayCubeSpec[0]);
+        lightShader.setModel(model);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glActiveTexture(GL_TEXTURE0);
+
+        model = MS.pop();
+     
         //drawAlgorithm(numCubes, &MS, model, arrayCubeSpec, &lightShader, &testCube);
         
         
