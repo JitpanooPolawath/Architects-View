@@ -20,6 +20,7 @@
 #include <iostream>
 #include <filesystem> 
 #include <vector>
+#include <stdlib.h>  
 
 // Screen size
 int SCR_W = 1080;
@@ -55,7 +56,6 @@ float dif[] = { 0.0,0.0,0.0 };
 float spe[] = { 0.0,0.0,0.0 };
 float pos[] = { 0.0,0.0,-2.0 };
 bool trackWithCam = false;
-
 
 // Resizing window frame
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -167,7 +167,7 @@ glm::mat4 rotate(glm::mat4 model, float degree, float x, float y, float z) {
     return glm::rotate(model, glm::radians(degree), glm::vec3(x,y,z));
 }
 
-void setColor(Shader shader, cubeSpec cubic) {
+void setColor(Shader shader, Cube cubic) {
     shader.setColor(cubic.shininess);
     shader.setID("ID", 0);
 }
@@ -200,20 +200,14 @@ void setImLight() {
     lightPos[2] = pos[2];
 }
 
-void setImObj(cubeSpec* cubic) {
-    ImGui::Text("object setting");
-    ImGui::SliderFloat("shininess", &shininess, 0.0, 100);
-    cubic->shininess = shininess;
-}
-
-cubeSpec* setWalls(const char* path, int* numCubes) {
+std::vector<Cube> setWalls(const char* path, int* numCubes) {
 
     std::ifstream file(path);
     std::string strAmount;
     std::getline(file, strAmount);
     int amount = std::stoi(strAmount);
     *numCubes = amount;
-    cubeSpec* tempCubes = new cubeSpec[amount];
+    std::vector<Cube> tempVecCubes;
     std::string fileLine;
     std::vector<std::string> tokens;
     while (std::getline(file, fileLine)) {
@@ -223,30 +217,30 @@ cubeSpec* setWalls(const char* path, int* numCubes) {
             tokens.push_back(token);
         }
     }
-
     for (int i = 0; i < amount; i++) {
+        Cube tempCube;
         int ID = std::stoi(tokens[5*i+0]);
         float sX = std::stof(tokens[5*i+1]);
         float sY = std::stof(tokens[5*i+2]);
         float sZ = std::stof(tokens[5*i+3]);
         float rotate = std::stof(tokens[5*i+4]);
-        //std::cout<<ID << "---" << sX << "---" << sY << "---" << sZ << "---" << rotate << std::endl;
-        tempCubes[i].setTransformation(ID, glm::vec3(0.0, 0.0, 0.0), glm::vec3(sX, sY, sZ), rotate);
+        tempCube.setTransformation(ID, glm::vec3(0.0, 0.0, 0.0), glm::vec3(sX, sY, sZ), rotate);
+        tempVecCubes.push_back(tempCube);
     }
        
         
     file.close();
 
-    return tempCubes;
+    return tempVecCubes;
 }
 
-void swap(cubeSpec& cube1, cubeSpec& cube2) {
-    cubeSpec temp = cube1;
+void swap(Cube& cube1, Cube& cube2) {
+    Cube temp = cube1;
     cube1 = cube2;
     cube2 = temp;
 }
 
-int partition(cubeSpec* arr, int low, int high) {
+int partition(std::vector<Cube>& arr, int low, int high) {
     int pivot = arr[high].id; 
     int i = (low - 1);  
 
@@ -260,7 +254,7 @@ int partition(cubeSpec* arr, int low, int high) {
     return (i + 1);
 }
 
-void sortCube(cubeSpec* arr, int low, int high) {
+void sortCube(std::vector<Cube>& arr, int low, int high) {
     if (low < high) {
         int pi = partition(arr, low, high);
 
@@ -274,10 +268,9 @@ void sortCube(cubeSpec* arr, int low, int high) {
 int main() {
 
     int numCubes = 0;
-    cubeSpec* arrayCubeSpec = nullptr;
+    std::vector<Cube> arrayCubeSpec;
     arrayCubeSpec = setWalls("detection.txt", &numCubes);
     sortCube(arrayCubeSpec, 0, numCubes - 1);
-    
 
     // Initializing GLFW
     const char* glsl_version = "#version 300 es";
@@ -334,10 +327,69 @@ int main() {
 
     // Create shader object
     Shader lightShader("vertex.vs", "fragment.fs");
+     
+    float vertices[] = {
+        // positions          // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-    // Create cube object
-    Cube testCube;
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    arrayCubeSpec[0].setTexture("texture/container2.png", "texture/container2_specular.png");
+    arrayCubeSpec[1].setTexture("texture/wall.jpg", "texture/container2_specular.png");
     // Rendering loop
     while (!glfwWindowShouldClose(window)) {
 
@@ -384,7 +436,7 @@ int main() {
         float prevZ = 0.0;
         float prevRotate = 0.0;
         MS.push(model);
-        for (int i = 0; i < numCubes; i++) {
+        for (int i = 0; i < 4; i++) {
             
             if (i != 0) {
                 model = translate(model, prevX, prevY, prevZ);
@@ -398,7 +450,19 @@ int main() {
 
                 setColor(lightShader, arrayCubeSpec[i]);
                 lightShader.setModel(model);
-                testCube.drawCube("texture/container2.png", "texture/container2_specular.png");
+                
+                // Draw
+                // bind diffuse map
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, arrayCubeSpec[i].diffuseMap);
+                // bind specular map
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, arrayCubeSpec[i].specularMap);
+                glBindVertexArray(VAO);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glBindVertexArray(0);
+                glActiveTexture(GL_TEXTURE0);
+                
             model = MS.pop();
 
             prevX = arrayCubeSpec[i].scale.x / 2;
@@ -428,7 +492,11 @@ int main() {
             lightShader.setIsSpot(0);
             lightShader.setLightPos(glm::vec3(model[3]));
         }
-        testCube.drawCube("", "",true);
+        // Draw
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glActiveTexture(GL_TEXTURE0);
         model = MS.pop();
 
         // ImGui After scene
@@ -437,7 +505,6 @@ int main() {
         ImGui::Text("press [1] : light track camera - press [2] : light untrack camera");
         setImLight();
         ImGui::End();
-
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -451,7 +518,8 @@ int main() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    testCube.deleteBuffVer();
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     glfwTerminate();
     return 0;
     

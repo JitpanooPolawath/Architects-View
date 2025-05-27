@@ -86,5 +86,8 @@
     <Image Include="texture\container2_specular.png">
       <Filter>Source Files\texture</Filter>
     </Image>
+    <Image Include="texture\wall.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
