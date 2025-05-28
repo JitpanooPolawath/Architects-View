@@ -450,7 +450,7 @@ int main() {
         float prevZ = 0.0;
         float prevRotate = 0.0;
         MS.push(model);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < numCubes; i++) {
             
             if (i != 0) {
                 model = translate(model, prevX, prevY, prevZ);
