@@ -23,22 +23,35 @@ if __name__ == "__main__":
             if k%256 == 32:
                 
                 cv.imwrite("test1.jpg", image)
-                break
+                print("Parsing image...")
+                result = reader.readtext('test1.jpg',detail=0)
+                finalRe = []
+                with open("detection.txt","w") as f:
+                    f.write(str(len(result))+"\n")
+                    for r in result:
+                        print(r)
+                        againN = input("If result is correct press [Enter] else type [Again]: ")
+                        if againN.lower() == "again":
+                            nSpec = input("input specification: ")
+                            r = nSpec
+                        finalRe.append(r)
+                        f.write(r+"\n")
+                    
+                for r in finalRe:
+                    print(r)
+                n = input("If result is correct type [Yes] else [No]: ")
+                if n.lower() == "yes":
+                    break
+                else:
+                    print("\n\n\n\nRetry image")
+                    continue
         else:
             break
     
+    f.close()
     cam.release()
 
-    cv.destroyAllWindows()
-
-    # Initialize OCR
-    print("Parsing image...")
-    result = reader.readtext('test1.jpg',detail=0)
-    
-    with open("detection.txt","w") as f:
-        f.write(str(len(result))+"\n")
-        for r in result:
-            f.write(r+"\n")
+    cv.destroyAllWindows()    
     
     # Execute program
 
