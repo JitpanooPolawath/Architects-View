@@ -15,6 +15,10 @@ A program that allows users to take a photo of a building blueprint and render i
 - GUI - sort of complete
 - Write a Python script that executes the C++ file after OCR
 
+# Usage
+1 - Build the Architect's View C++ file
+2 - Move the vertex shader file, fragment shader file, texture folder, Architect's View.exe, and main.py file into a directory of your choice and run main.py
+
 # Additional features
 - More Complex lighting - shadow, multiple lights, and more
 - Normal mapping for walls
